@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Audio to Text</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background-color: #ffffff;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            width: 400px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        #result {
+            background-color: #f9f9f9;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 15px;
+            height: 150px;
+            overflow-y: auto;
+            font-size: 16px;
+            color: #333;
+            text-align: left;
+            margin-bottom: 20px;
+        }
+
+        #mic-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        #mic {
+            font-size: 50px;
+            cursor: pointer;
+            user-select: none;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 80px;
+            height: 80px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: background-color 0.3s;
+        }
+
+        #mic:hover {
+            background-color: #45a049;
+        }
+
+        #mic.listening {
+            background-color: #f44336;
+        }
+
+        #start-stop-btn {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background-color: #008CBA;
+            color: white;
+            transition: background-color 0.3s;
+        }
+
+        #start-stop-btn:hover {
+            background-color: #007bb5;
+        }
+
+        #language {
+            margin-bottom: 20px;
+            padding: 5px;
+            font-size: 14px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Live Audio to Text</h1>
+
+        <div id="result">Your transcribed text will appear here...</div>
+
+        <select id="language">
+            <option value="en-US">English (US)</option>
+            <option value="en-GB">English (UK)</option>
+            <option value="hi-IN">Hindi</option>
+            <!-- Add more languages as needed -->
+        </select>
+
+        <div id="mic-container">
+            <div id="mic">🎙️</div>
+            <button id="start-stop-btn">Start/Stop</button>
+        </div>
+    </div>
+
+    <script>
+        const mic = document.getElementById('mic');
+        const result = document.getElementById('result');
+        const languageSelect = document.getElementById('language');
+        const startStopBtn = document.getElementById('start-stop-btn');
+
+        let recognition;
+        let isListening = false;
+
+        function initRecognition() {
+            recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.lang = languageSelect.value;
+            recognition.interimResults = true;
+            recognition.continuous = true;
+
+            recognition.addEventListener('result', (event) => {
+                const transcriptArray = Array.from(event.results)
+                    .map(result => result[0].transcript)
+                    .join('');
+                result.textContent = `Transcribed Text: ${transcriptArray}`;
+            });
+
+            recognition.addEventListener('error', (event) => {
+                result.textContent = `Error: ${event.error}`;
+                if (event.error === 'no-speech') {
+                    result.textContent += " (No speech detected. Please try again.)";
+                }
+            });
+
+            recognition.addEventListener('end', () => {
+                if (isListening) recognition.start(); // Restart recognition if it ends automatically
+            });
+        }
+
+        startStopBtn.addEventListener('click', () => {
+            if (isListening) {
+                recognition.stop();
+                mic.classList.remove('listening');
+                result.textContent += " [Stopped]";
+                startStopBtn.textContent = "Start";
+                isListening = false;
+            } else {
+                initRecognition();
+                recognition.start();
+                mic.classList.add('listening');
+                result.textContent = 'Listening...';
+                startStopBtn.textContent = "Stop";
+                isListening = true;
+            }
+        });
+
+        languageSelect.addEventListener('change', () => {
+            if (isListening) {
+                recognition.stop(); // Stop the current recognition
+                initRecognition(); // Re-initialize with new language
+                recognition.start(); // Start the recognition again
+            }
+        });
+    </script>
+</body>
+
+</html>
