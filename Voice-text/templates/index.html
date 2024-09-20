@@ -104,19 +104,16 @@
 <body>
     <div class="container">
         <h1>Live Audio to Text</h1>
-
         <div id="result">Your transcribed text will appear here...</div>
-
         <select id="language">
             <option value="en-US">English (US)</option>
             <option value="en-GB">English (UK)</option>
             <option value="hi-IN">Hindi</option>
             <!-- Add more languages as needed -->
         </select>
-
         <div id="mic-container">
             <div id="mic">🎙️</div>
-            <button id="start-stop-btn">Start/Stop</button>
+            <button id="start-stop-btn">Start</button>
         </div>
     </div>
 
@@ -139,7 +136,7 @@
                 const transcriptArray = Array.from(event.results)
                     .map(result => result[0].transcript)
                     .join('');
-                result.textContent = `Transcribed Text: ${transcriptArray}`;
+                result.textContent = transcriptArray; // Append transcript to existing text
             });
 
             recognition.addEventListener('error', (event) => {
@@ -182,3 +179,6 @@
 </body>
 
 </html>
+
+
+
